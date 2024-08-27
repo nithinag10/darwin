@@ -20,10 +20,6 @@ class ProjectRepository:
             ','.join(project.links) if project.links else None
         )
 
-        print(values)
-        print(type(values))
-        print("Printing values and queries")
-
         await self.db.execute(query, values)
         return self.db.lastrowid
 

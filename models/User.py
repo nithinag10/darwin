@@ -1,11 +1,12 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, EmailStr
 from typing import Optional
+from datetime import datetime
 
 
 class User(BaseModel):
     id: Optional[int] = None
     name: str
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
+    email: EmailStr
+    password: str
 
     model_config = ConfigDict(from_attributes=True)

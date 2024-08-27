@@ -1,5 +1,5 @@
-from fastapi import FastAPI, Depends, File, UploadFile, Form, HTTPException, Query
-from typing import List, Optional
+from fastapi import FastAPI, Depends, File, UploadFile, Form, HTTPException
+from typing import Dict, Union, List, Optional
 import aiomysql
 from database import get_db_conn
 from fastapi import File, UploadFile
@@ -10,6 +10,8 @@ from models.Project import Project
 from models.User import User
 from repositories.ProjectRepository import ProjectRepository
 from repositories.UserRepository import UserRepository 
+from services.Users import UserService
+from util import transaction
 
 app = FastAPI()
 
@@ -37,9 +39,9 @@ async def test_db(db: aiomysql.Cursor = Depends(get_db_conn)):
 
 
 @app.post("/create-user")
-async def create_user(name: str, db: aiomysql.Cursor = Depends(get_db_conn)):
+async def create_user(name: str, db_con: aiomysql.Cursor = Depends(get_db_conn)):
     try:
-        user_repo = UserRepository(db)
+        user_repo = UserRepository(db_con)
         user = User(name=name)
         user_id = await user_repo.create(user)
         return {
@@ -60,7 +62,7 @@ async def create_project(
     documents: List[UploadFile] = File(None),
     photos: List[UploadFile] = File(None), 
     links: List[str] = Form(None),
-    db_conn: aiomysql.Connection = Depends(get_db_conn)
+    db_con: aiomysql.Connection = Depends(get_db_conn)
 ):
     # Initialize BlobServiceClient
     blob_service_client = BlobServiceClient.from_connection_string(settings.azure_storage_connection_string)
@@ -94,7 +96,7 @@ async def create_project(
         links=links
     )
     
-    project_repo = ProjectRepository(db_conn)
+    project_repo = ProjectRepository(db_con)
     project_id = await project_repo.create(project)
     
     return {
@@ -112,9 +114,9 @@ async def update_project(
     documents: Optional[List[UploadFile]] = File(None),
     photos: Optional[List[UploadFile]] = File(None),
     links: Optional[List[str]] = Form(None),
-    db_conn: aiomysql.Connection = Depends(get_db_conn)
+    db_con: aiomysql.Connection = Depends(get_db_conn)
 ):
-    project_repo = ProjectRepository(db_conn)
+    project_repo = ProjectRepository(db_con)
     existing_project = await project_repo.get_by_id(project_id)
     
     if not existing_project:
@@ -165,3 +167,21 @@ async def update_project(
     else:
         raise HTTPException(status_code=500, detail="Failed to update project")
 
+
+@app.post("/signup", response_model=Dict[str, Union[User, str]])
+async def signup(name: str = Form(...), email: str = Form(...), password: str = Form(...), db_con=Depends(get_db_conn)):
+    user_service = UserService(db_con, settings.secret_key)
+    result = await user_service.create_user(name, email, password)
+    if result:
+        return {"user": result["user"], "token": result["token"]}
+    else:
+        raise HTTPException(status_code=400, detail="User already exists")
+
+@app.post("/login", response_model=Dict[str, Union[User, str]])
+async def login(email: str = Form(...), password: str = Form(...), db_con=Depends(get_db_conn)):
+    user_service = UserService(db_con, settings.secret_key)
+    result = await user_service.login(email, password)
+    if result:
+        return {"user": result["user"], "token": result["token"]}
+    else:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
