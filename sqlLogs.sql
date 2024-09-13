@@ -128,3 +128,35 @@ CREATE TABLE DocumentationSources (
 CREATE INDEX idx_product_id ON DesignSources(product_id);
 CREATE INDEX idx_product_id ON DocumentationSources(product_id);
 CREATE INDEX idx_product_id ON Evaluations(product_id);
+
+-- Alter DesignSources table
+ALTER TABLE DesignSources
+ADD COLUMN storage_url VARCHAR(255),
+ADD COLUMN file_size BIGINT,
+ADD COLUMN content_type VARCHAR(100),
+ADD COLUMN fetched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+-- Alter DocumentationSources table
+ALTER TABLE DocumentationSources
+ADD COLUMN storage_url VARCHAR(255),
+ADD COLUMN file_size BIGINT,
+ADD COLUMN content_type VARCHAR(100),
+ADD COLUMN fetched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+ALTER TABLE user_agents RENAME TO EvaluationUserAgents;
+
+CREATE TABLE UserAgentDefinitions (
+    id SERIAL PRIMARY KEY,
+    created_by_user_id INTEGER REFERENCES Users(id),
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    characteristics json,
+    is_predefined BOOLEAN DEFAULT false,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Modify UserAgentDefinitions table
+ALTER TABLE UserAgentDefinitions
+MODIFY COLUMN id INT AUTO_INCREMENT;
