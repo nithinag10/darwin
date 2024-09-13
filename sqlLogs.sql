@@ -64,3 +64,67 @@ CREATE TABLE Reports (
     eval_id INT,
     FOREIGN KEY (eval_id) REFERENCES Evaluations(id)
 );
+
+ALTER TABLE Projects
+DROP COLUMN proj_info,
+DROP COLUMN documents,
+DROP COLUMN photos,
+DROP COLUMN links;
+
+
+
+CREATE TABLE DesignSources (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    product_id INT,
+    type VARCHAR(50) NOT NULL,
+    file_key VARCHAR(255) NOT NULL,
+    access_token VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES Products(id)
+);
+
+ALTER TABLE Evaluations
+DROP FOREIGN KEY evaluations_ibfk_1;
+
+ALTER TABLE Evaluations
+DROP COLUMN proj_id;
+
+ALTER TABLE Evaluations
+ADD CONSTRAINT fk_evaluations_product
+FOREIGN KEY (product_id) REFERENCES Products(id);
+
+CREATE TABLE Products (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    project_id INT UNIQUE,
+    name VARCHAR(255) NOT NULL,
+    custom_instructions TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (project_id) REFERENCES Projects(id)
+);
+
+CREATE TABLE DesignSources (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    product_id INT,
+    type VARCHAR(50) NOT NULL,
+    file_key VARCHAR(255) NOT NULL,
+    access_token VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES Products(id)
+);
+
+CREATE TABLE DocumentationSources (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    product_id INT,
+    type VARCHAR(50) NOT NULL,
+    url VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES Products(id)
+);
+
+CREATE INDEX idx_product_id ON DesignSources(product_id);
+CREATE INDEX idx_product_id ON DocumentationSources(product_id);
+CREATE INDEX idx_product_id ON Evaluations(product_id);
