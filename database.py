@@ -27,5 +27,16 @@ async def get_db_conn():
         await init_db()
     async with db_pool.acquire() as conn:
         async with conn.cursor(aiomysql.DictCursor) as cur:
-            yield cur
+            yield conn, cur  # Yield connection and cursor
+
+async def transaction():
+    async with db_pool.acquire() as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
+            await conn.begin()  # Start a transaction
+            try:
+                yield conn, cur  # Yield connection and cursor for transaction
+                await conn.commit()  # Commit the transaction if successful
+            except Exception as e:
+                await conn.rollback()  # Rollback on error
+                raise e
 
