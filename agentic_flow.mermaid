@@ -1,0 +1,26 @@
+```mermaid
+graph TD
+A[Start Evaluation] --> B[Project Manager Agent]
+B --> C{Define Evaluation Scope}
+C --> D[User Agent Selection]
+C --> E[Scenario Definition]
+D --> F[RAG: Fetch Relevant Product Info]
+E --> F
+F --> G[User Agent]
+G --> H[Interaction Simulation]
+H --> I[Feature Gap Detection]
+I --> J[AI Feature Ideation Agent]
+J --> K[Feature Suggestion & Prioritization]
+K --> L[Developer Agent]
+L --> M[Technical Feasibility Assessment]
+M --> N[Product Manager Agent]
+N --> O[Final Report Generation]
+O --> P[End Evaluation]
+
+K --> |Clarification Needed| G
+M --> |Technical Constraints| J
+N --> |Refinement Needed| C
+O --> |Additional Scenarios| E
+N --> |Feasibility Questions| L
+J --> |New Feature Ideas| G
+```

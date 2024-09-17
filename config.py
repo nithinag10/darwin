@@ -11,6 +11,12 @@ class Settings(BaseSettings):
     azure_storage_container_name: str
     secret_key: str = token_urlsafe(32)
 
+        # Added settings for model configuration
+    model_api: str = "groq"  # Options: "groq", "openai"
+    model_name: str = "mixtral-8x7b-32768"  # Default model name
+    temperature: float = 0.9  # Default temperature for LLMs
+    model_api_key: str
+    
     class Config:
         env_file = ".env"
 
