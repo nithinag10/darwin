@@ -14,6 +14,8 @@ async def init_db():
         db=settings.mysql_db,
         autocommit=True
     )
+    if db_pool is None:
+        raise ValueError("Database pool is not initialized.")
 
 
 async def close_db():
@@ -30,6 +32,8 @@ async def get_db_conn():
             yield conn, cur  # Yield connection and cursor
 
 async def transaction():
+    if db_pool is None:
+        await init_db()
     async with db_pool.acquire() as conn:
         async with conn.cursor(aiomysql.DictCursor) as cur:
             await conn.begin()  # Start a transaction

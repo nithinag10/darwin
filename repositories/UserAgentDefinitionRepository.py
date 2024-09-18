@@ -8,12 +8,11 @@ class UserAgentDefinitionRepository:
     async def create(self, user_agent: UserAgentDefinition) -> UserAgentDefinition:
         query = """
         INSERT INTO UserAgentDefinitions (created_by_user_id, name, description, characteristics, is_predefined, is_active, created_at, updated_at)
-        VALUES (%s, %s, %s, %s, %s, %s, NOW(), NOW())
-        RETURNING id;
+        VALUES (%s, %s, %s, %s, %s, %s, NOW(), NOW());
         """
         async with self.db_con.cursor() as cur:
             await cur.execute(query, (user_agent.created_by_user_id, user_agent.name, user_agent.description, user_agent.characteristics, user_agent.is_predefined, user_agent.is_active))
-            user_agent.id = await cur.fetchone()
+            user_agent.id = cur.lastrowid  # Get the last inserted ID
             return user_agent
 
     async def get_all(self) -> list:

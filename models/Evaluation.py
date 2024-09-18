@@ -1,20 +1,23 @@
 from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from enum import Enum
+from dataclasses import dataclass
+from datetime import datetime
 
 
-class EvaluationStatus(str, Enum):
+class EvaluationStatus(Enum):
     START = "START"
     IN_PROGRESS = "IN_PROGRESS"
     COMPLETED = "COMPLETED"
 
 
-class Evaluation(BaseModel):
+@dataclass
+class Evaluation:
     id: Optional[int] = None
-    proj_id: int
-    name: str
+    name: str = ""
     status: EvaluationStatus = EvaluationStatus.START
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
+    product_id: int = 0
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)

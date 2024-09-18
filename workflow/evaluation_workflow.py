@@ -1,40 +1,18 @@
+from typing import Dict, Optional
 from langgraph.graph import StateGraph
-from typing import Dict, TypedDict
+from langgraph.checkpoint.sqlite import SqliteSaver
+import logging
+
+from workflow.state import EvaluationState
+from workflow.nodes.define_scope_node import DefineScopeNode
+from workflow.nodes.fetch_product_info_node import FetchProductInfoNode
+from workflow.nodes.simulate_user_interaction_node import InteractionSimulationNode
 from agents.project_manager_agent import ProjectManagerAgent
 from agents.user_agent import UserAgent
 from services.RAGService import RAGService
 from models.Evaluation import Evaluation
 
-
-class EvaluationState(TypedDict):
-    evaluation_scope: str
-    user_agent: UserAgent
-    rag_service: RAGService
-    scenario: str
-    product_info: str
-    interaction_result: str
-
-
-async def define_scope(state: EvaluationState) -> EvaluationState:
-    evaluation = state.get('evaluation')
-    project_manager = state['project_manager_agent']
-    state["evaluation_scope"] = await project_manager.define_evaluation_scope(
-        f"Evaluation ID: {evaluation.id}, Type: {state['evaluation_type']}"
-    )
-    return state
-
-
-async def fetch_product_info(state: EvaluationState) -> EvaluationState:
-    state["product_info"] = await state["rag_service"].fetch_relevant_info(state["evaluation_scope"])
-    return state
-
-
-async def simulate_user_interaction(state: EvaluationState) -> EvaluationState:
-    state["interaction_result"] = await state["user_agent"].simulate_interaction(
-        state["scenario"], state["product_info"]
-    )
-    return state
-
+logger = logging.getLogger(__name__)
 
 async def run_evaluation_workflow(
     evaluation: Evaluation,
@@ -43,18 +21,30 @@ async def run_evaluation_workflow(
     rag_service: RAGService,
     project_manager_agent: ProjectManagerAgent,
     user_agent: UserAgent
-) -> Dict:
-    # Initialize workflow with updated Graph configuration if needed
-    workflow = Graph()
+) -> Optional[Dict]:
+    """
+    Runs the evaluation workflow using LangGraph.
+    """
+    # Initialize workflow with state_schema
+    workflow = StateGraph(state_schema=EvaluationState)
 
-    # Define nodes (ensure methods are correctly registered)
+    # Instantiate node classes
+    define_scope = DefineScopeNode(project_manager_agent)
+    fetch_product_info = FetchProductInfoNode(rag_service)
+    interaction_simulation = InteractionSimulationNode(user_agent)
+
+    # Add nodes to the workflow
     workflow.add_node("define_scope", define_scope)
     workflow.add_node("fetch_product_info", fetch_product_info)
-    workflow.add_node("simulate_user_interaction", simulate_user_interaction)
+    workflow.add_node("interaction_simulation", interaction_simulation)
 
-    # Define edges (verify if edge definition syntax has changed)
+    # Define edges
     workflow.add_edge("define_scope", "fetch_product_info")
-    workflow.add_edge("fetch_product_info", "simulate_user_interaction")
+    workflow.add_edge("fetch_product_info", "interaction_simulation")
+
+    # Setup checkpointing with SQLite (optional)
+    memory = SqliteSaver.from_conn_string(":memory:")
+    workflow.compile(checkpointer=memory)
 
     # Initialize state
     initial_state: EvaluationState = {
@@ -66,12 +56,20 @@ async def run_evaluation_workflow(
         "scenario": "First-time user exploring the product",
         "evaluation_scope": "",
         "product_info": "",
-        "interaction_result": ""
+        "interaction_result": "",
+        "product_id": evaluation.product_id
     }
 
-    # Run the workflow (ensure asynchronous streaming is handled as per latest API)
-    async for state in workflow.astream(initial_state):
-        if workflow.is_finished():
-            return state
+    try:
+        # Run the workflow asynchronously
+        async for state in workflow.astream(initial_state):
+            if workflow.is_finished():
+                logger.info("Workflow finished successfully for Evaluation ID: %s", evaluation.id)
+                return state
 
-    return {}
+        logger.warning("Workflow did not finish as expected for Evaluation ID: %s", evaluation.id)
+        return {}
+    except Exception as e:
+        logger.error("Error running evaluation workflow for Evaluation ID: %s - %s", evaluation.id, str(e))
+        # Handle or re-raise the exception as needed
+        raise e

@@ -28,12 +28,15 @@ class EvaluationRepository:
             return cur.rowcount > 0
 
     async def create(self, evaluation: Evaluation) -> int:
+        print("Printing the status: " + str(evaluation.status))
+        # Ensure the status is valid
+        if evaluation.status not in EvaluationStatus:  # Check against the enum directly
+            raise ValueError("Invalid status: " + str(evaluation.status))
+        
         query = """
         INSERT INTO Evaluations (name, status, created_at, updated_at, product_id)
-        VALUES (%s, %s, NOW(), NOW(), %s)
-        RETURNING id;
+        VALUES (%s, %s, NOW(), NOW(), %s);
         """
         async with self.db_con.cursor() as cur:
-            await cur.execute(query, (evaluation.name, evaluation.status, evaluation.product_id))
-            row = await cur.fetchone()
-            return row['id'] if row else None
+            await cur.execute(query, (evaluation.name, evaluation.status.value, evaluation.product_id))  # Use .value to get the string
+            return cur.lastrowid  # Use lastrowid to get the last inserted ID
