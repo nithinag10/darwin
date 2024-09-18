@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Form
-from typing import Dict
+from typing import Dict, Optional
 from services.Evaluation import EvaluationService
 from repositories.EvaluationRepository import EvaluationRepository
 from services.RAGService import RAGService

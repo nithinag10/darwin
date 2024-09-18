@@ -1,4 +1,4 @@
-from langgraph import StateGraph
+from langgraph.graph import StateGraph
 from typing import Dict, TypedDict
 from agents.project_manager_agent import ProjectManagerAgent
 from agents.user_agent import UserAgent
