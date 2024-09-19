@@ -27,11 +27,11 @@ class ProjectManagerAgent:
                 model_name=model_name
             )
         else:
-            logging.error("Unsupported model API")  # {{ edit_4 }}
+            logging.error("Unsupported model API")
             raise ValueError("Unsupported model API")
 
     async def define_evaluation_scope(self, evaluation_context: str) -> str:
-        logging.debug(f"Defining evaluation scope for context: {evaluation_context}")  # {{ edit_5 }}
+        logging.debug(f"Defining evaluation scope for context: {evaluation_context}")
         messages = [
             HumanMessage(content=PROJECT_MANAGER_PROMPT),
             HumanMessage(content=f"Define the evaluation scope for: {evaluation_context}")

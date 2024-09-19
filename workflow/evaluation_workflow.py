@@ -17,7 +17,6 @@ logger = logging.getLogger(__name__)
 
 async def run_evaluation_workflow(
     evaluation: Evaluation,
-    user_agent_definition_id: int,
     evaluation_type: str,
     rag_service: RAGService,
     project_manager_agent: ProjectManagerAgent,
@@ -30,7 +29,7 @@ async def run_evaluation_workflow(
     workflow = StateGraph(state_schema=EvaluationState)
 
     # Instantiate node classes
-    define_scope = DefineScopeNode(project_manager_agent)
+    define_scope = DefineScopeNode()
     fetch_product_info = FetchProductInfoNode(rag_service)
     interaction_simulation = InteractionSimulationNode(user_agent)
 
@@ -54,8 +53,7 @@ async def run_evaluation_workflow(
         "user_agent": user_agent,
         "rag_service": rag_service,
         "project_manager_agent": project_manager_agent,
-        "scenario": "First-time user exploring the product",
-        "evaluation_scope": "",
+        "evaluation_scope": evaluation_type,
         "product_info": "",
         "interaction_result": "",
         "product_id": evaluation.product_id

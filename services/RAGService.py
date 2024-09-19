@@ -20,4 +20,10 @@ class RAGService:
         """
         # Simulating vector database query
         await asyncio.sleep(0.5)  # Simulate DB query time
-        return "Dummy product info. It has a login page with a username and password field. It also has a submit button."
+        return """  The BookMyShow application features a user-friendly login page where users can easily sign in or register. 
+                    Once logged in, users can browse a wide selection of movies and shows, 
+                    view detailed descriptions, and check showtimes. The app includes a 
+                    seating selection page, allowing users to choose their preferred seats 
+                    in the theater. Additionally, users can book tickets seamlessly, access 
+                    their booking history, and receive notifications about upcoming shows and 
+                    special offers, making it a comprehensive platform for movie enthusiasts."""

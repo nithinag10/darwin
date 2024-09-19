@@ -73,7 +73,7 @@ class EvaluationService:
         logger.debug("Triggering workflow for evaluation ID: %s", evaluation_id)
         # Trigger the LangGraph workflow
         workflow_result = await run_evaluation_workflow(
-            evaluation, user_agent_definition_id, evaluation_type, self.rag_service,
+            evaluation, evaluation_type, self.rag_service,
             self.project_manager_agent, self.user_agent
         )
 

@@ -40,9 +40,9 @@ async def trigger_evaluation(
         raise HTTPException(status_code=404, detail="User agent definition not found")
     
     # Access characteristics from the dictionary
-    user_agent = UserAgent(agent_characteristics=user_agent_definition['characteristics'])  # Changed this line
+    user_agent = UserAgent(agent_characteristics=user_agent_definition['characteristics'])
     
-    # Initialize EvaluationService
+    # Initialize EvaluationService 
     evaluation_service = EvaluationService(
         evaluation_repository=evaluation_repository,
         rag_service=rag_service,

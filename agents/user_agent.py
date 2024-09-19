@@ -1,4 +1,5 @@
-import logging  # Importing logging module
+import logging
+import json
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)  # Set logging level to DEBUG
@@ -28,26 +29,21 @@ class UserAgent:
                 temperature=settings.temperature,
                 model_name=model_name
             )
-            logger.debug("Using ChatOpenAI model")  # Debug log
+            logger.debug("Using ChatOpenAI model")
         else:
-            logger.error("Unsupported model API")  # Error log
+            logger.error("Unsupported model API")
             raise ValueError("Unsupported model API")
 
-    async def simulate_interaction(self, scenario: str, product_info: str) -> str:
-        logger.debug(f"Simulating interaction with scenario: {scenario} and product_info: {product_info}")  # Debug log
+    async def simulate_interaction(self, product_info: str) -> str:
+        logger.debug(f"Simulating interactionproduct_info: {product_info}")
+        characteristics_dict = json.loads(self.characteristics)
+        characteristics_dict["product_info"] = product_info
         
-        dummy_agent_characteristics = {
-            "name": "Test Agent",
-            "age": 5,
-            "type": "virtual assistant",
-            "language": "English",
-            "skills": ["chatting", "information retrieval", "task management"]
-        }
+        logger.debug(f"Characteristics dict: {characteristics_dict}")
         
         messages = [
-            HumanMessage(content=USER_AGENT_PROMPT.format(**dummy_agent_characteristics)),
-            HumanMessage(content=f"Scenario: {scenario}\nProduct Info: {product_info}\nSimulate your interaction:")
+            HumanMessage(content=USER_AGENT_PROMPT.format(**characteristics_dict)),
         ]
         response = await self.llm.ainvoke(messages)
-        logger.debug("Received response from model")
+        logger.debug("Received response from model message: {response.content}")
         return response.content
