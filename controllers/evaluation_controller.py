@@ -10,6 +10,7 @@ from database import transaction
 from config import settings
 from logging_config import setup_logging
 import logging
+from fastapi.encoders import jsonable_encoder
 
 # Setup logging
 setup_logging()
@@ -60,4 +61,5 @@ async def trigger_evaluation(
         evaluation_type=evaluation_type
     )
     logger.info("Triggered evaluation workflow with ID: %s", evaluation_id)
-    return {"status": "success", "evaluation_id": evaluation_id, "result": result}
+
+    return jsonable_encoder(result)

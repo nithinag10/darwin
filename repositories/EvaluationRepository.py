@@ -24,7 +24,7 @@ class EvaluationRepository:
         WHERE id = %s;
         """
         async with self.db_con.cursor() as cur:
-            await cur.execute(query, (evaluation.status, evaluation.id))
+            await cur.execute(query, (evaluation.status.value, evaluation.id))
             return cur.rowcount > 0
 
     async def create(self, evaluation: Evaluation) -> int:

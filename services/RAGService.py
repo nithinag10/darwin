@@ -20,4 +20,4 @@ class RAGService:
         """
         # Simulating vector database query
         await asyncio.sleep(0.5)  # Simulate DB query time
-        return [f"Dummy relevant info {i} for product ID: {product_id}" for i in range(1, k + 1)]
+        return "Dummy product info. It has a login page with a username and password field. It also has a submit button."

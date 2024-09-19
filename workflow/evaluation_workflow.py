@@ -1,6 +1,6 @@
+import asyncio
 from typing import Dict, Optional
 from langgraph.graph import StateGraph
-from langgraph.checkpoint.sqlite import SqliteSaver
 import logging
 
 from workflow.state import EvaluationState
@@ -11,6 +11,7 @@ from agents.project_manager_agent import ProjectManagerAgent
 from agents.user_agent import UserAgent
 from services.RAGService import RAGService
 from models.Evaluation import Evaluation
+from IPython.display import Image, display
 
 logger = logging.getLogger(__name__)
 
@@ -38,13 +39,13 @@ async def run_evaluation_workflow(
     workflow.add_node("fetch_product_info", fetch_product_info)
     workflow.add_node("interaction_simulation", interaction_simulation)
 
+    # Set entry and finish points
+    workflow.set_entry_point("define_scope")  # Set entry point
+    workflow.set_finish_point("interaction_simulation")  # Set finish point
+
     # Define edges
     workflow.add_edge("define_scope", "fetch_product_info")
     workflow.add_edge("fetch_product_info", "interaction_simulation")
-
-    # Setup checkpointing with SQLite (optional)
-    memory = SqliteSaver.from_conn_string(":memory:")
-    workflow.compile(checkpointer=memory)
 
     # Initialize state
     initial_state: EvaluationState = {
@@ -60,16 +61,17 @@ async def run_evaluation_workflow(
         "product_id": evaluation.product_id
     }
 
-    try:
-        # Run the workflow asynchronously
-        async for state in workflow.astream(initial_state):
-            if workflow.is_finished():
-                logger.info("Workflow finished successfully for Evaluation ID: %s", evaluation.id)
-                return state
+    # Compile the workflow
+    compiled_workflow = workflow.compile()
 
-        logger.warning("Workflow did not finish as expected for Evaluation ID: %s", evaluation.id)
-        return {}
-    except Exception as e:
-        logger.error("Error running evaluation workflow for Evaluation ID: %s - %s", evaluation.id, str(e))
-        # Handle or re-raise the exception as needed
-        raise e
+    try:
+        # Save the graph to a file for debugging
+        graph_image_path = "workflow_graph.png"  # Specify the file path
+        compiled_workflow.get_graph().draw_mermaid_png(graph_image_path)  # Save the graph as an image
+        logger.info("Workflow graph saved to %s", graph_image_path)
+    except Exception:
+        logger.warning("Could not save workflow graph.")
+
+    final_state = await compiled_workflow.ainvoke(initial_state)
+    logger.info("Workflow finished successfully for Evaluation ID: %s", evaluation.id)
+    return final_state

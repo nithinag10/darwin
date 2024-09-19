@@ -5,7 +5,7 @@ from agents.project_manager_agent import ProjectManagerAgent
 from agents.user_agent import UserAgent
 from workflow.evaluation_workflow import run_evaluation_workflow
 from typing import Optional
-import aiomysql
+
 import logging
 from logging_config import setup_logging
 
