@@ -1,8 +1,10 @@
 from models.Evaluation import Evaluation, EvaluationStatus
 from repositories.EvaluationRepository import EvaluationRepository
 from services.RAGService import RAGService
-from agents.project_manager_agent import ProjectManagerAgent
 from agents.user_agent import UserAgent
+from agents.ai_features_ideation_agent import AIFeatureIdeationAgent
+from agents.developer_agent import DeveloperAgent
+from agents.product_manager_agent import ProductManagerAgent
 from workflow.evaluation_workflow import run_evaluation_workflow
 from typing import Optional
 
@@ -18,13 +20,17 @@ class EvaluationService:
         self,
         evaluation_repository: EvaluationRepository,
         rag_service: RAGService,
-        project_manager_agent: ProjectManagerAgent,
-        user_agent: UserAgent
+        product_manager_agent: ProductManagerAgent,
+        user_agent: UserAgent,
+        ai_feature_ideation_agent: AIFeatureIdeationAgent,
+        developer_agent: DeveloperAgent
     ):
         self.evaluation_repository = evaluation_repository
         self.rag_service = rag_service
-        self.project_manager_agent = project_manager_agent
+        self.product_manager_agent = product_manager_agent
         self.user_agent = user_agent
+        self.ai_feature_ideation_agent = ai_feature_ideation_agent
+        self.developer_agent = developer_agent
 
     async def create_evaluation(self, name: str, product_id: int) -> int:
         logger.debug("Creating new evaluation with name: %s and product_id: %s", name, product_id)
@@ -61,7 +67,7 @@ class EvaluationService:
         return await self.change_evaluation_status(evaluation_id, EvaluationStatus.COMPLETED)
 
     async def trigger_workflow(
-        self, evaluation_id: int, user_agent_definition_id: int, evaluation_type: str
+        self, evaluation_id: int, evaluation_type: str
     ) -> Optional[dict]:
         logger.info("Starting evaluation workflow for ID: %s", evaluation_id)
         # Fetch the evaluation
@@ -70,11 +76,20 @@ class EvaluationService:
             logger.error("Evaluation not found for ID: %s", evaluation_id)
             raise ValueError("Evaluation not found")
 
+        # Initialize agentsproduct_manager_agent
+        user_agent = self.user_agent
+
+        # Additional agents
+        ai_feature_ideation_agent = self.ai_feature_ideation_agent
+        developer_agent = self.developer_agent
+        product_manager_agent = self.product_manager_agent
+
         logger.debug("Triggering workflow for evaluation ID: %s", evaluation_id)
         # Trigger the LangGraph workflow
         workflow_result = await run_evaluation_workflow(
             evaluation, evaluation_type, self.rag_service,
-            self.project_manager_agent, self.user_agent
+            product_manager_agent, user_agent,
+            ai_feature_ideation_agent, developer_agent
         )
 
         # Update evaluation status based on workflow result
