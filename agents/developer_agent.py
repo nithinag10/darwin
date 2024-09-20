@@ -1,4 +1,5 @@
 import logging
+import json
 from langchain_groq import ChatGroq
 from langchain_openai import ChatOpenAI
 from langchain.schema import HumanMessage
@@ -28,21 +29,36 @@ class DeveloperAgent:
             logger.error("Unsupported model API for Developer Agent.")
             raise ValueError("Unsupported model API")
 
-    async def assess_feasibility_and_effort(self, feature_description: str) -> tuple:
-        logger.debug(f"Assessing feasibility and effort for feature: {feature_description}")
-        prompt = f"{DEVELOPER_AGENT_PROMPT.format(feature=feature_description)}\n\nAdditionally, estimate the development effort required for this feature (e.g., Low, Medium, High or detailed estimate)."
+    async def assess_feasibility_and_effort(self, features: str) -> dict:
+        logger.debug(f"Assessing feasibility and effort for feature: {features}")
+        prompt = DEVELOPER_AGENT_PROMPT.format(features=features)
         messages = [
             HumanMessage(content=prompt),
         ]
         response = await self.llm.ainvoke(messages)
-        feasibility_report = response.content.strip()
+        response_content = response.content.strip()
 
-        # Simplified parsing: Assume the response separates feasibility and effort by a newline
-        parts = feasibility_report.split('\n')
-        feasibility = parts[0].strip() if len(parts) > 0 else "No feasibility report provided."
-        effort = parts[1].strip() if len(parts) > 1 else "No effort estimate provided."
+        logger.debug(f"Received raw response: {response_content}")
 
-        logger.debug(f"Feasibility report: {feasibility}")
-        logger.debug(f"Development effort: {effort}")
+        # Extract JSON from the response
+        try:
+            # Ensure that the response is a valid JSON
+            feasibility_data_list = json.loads(response_content)
 
-        return feasibility, effort
+            logger.debug(f"Feasibility data list: {feasibility_data_list}")
+
+            return feasibility_data_list
+        except json.JSONDecodeError as e:
+            logger.error("Failed to parse JSON response from Developer Agent.")
+            logger.error(f"JSONDecodeError: {e}")
+            logger.debug("Attempting to extract JSON manually.")
+
+            # Attempt to extract JSON from the response using regex or other methods if necessary
+            # For simplicity, return default values
+            return [
+                {
+                    "feature": "Feature 1",
+                    "feasibility_report": "Could not parse feasibility report.",
+                    "development_effort": "Unknown"
+                }
+            ]

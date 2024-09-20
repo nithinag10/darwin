@@ -69,15 +69,28 @@ Please provide solutions to these pain points and ideate innovative features tha
 """
 
 DEVELOPER_AGENT_PROMPT = """
-Assess the technical feasibility of the following feature: {feature}. Provide a detailed feasibility report considering factors such as required technologies, potential challenges, estimated development time, and resource allocation.
+Assess the technical feasibility of the following features:
+<features>
+{features}
+</features>
+ 
+ Provide a detailed feasibility report considering factors such as required technologies, potential challenges, estimated development time, and resource allocation.
 
 Additionally, estimate the development effort required for this feature (e.g., Low, Medium, High).
 
+Note :
+1. As it read by non techical person, so don't use any technical jargon.
+2. Don't make it complecated understand. 
+3. As you don't know the code of the project don't assume anything. Just answer in general sense. 
+
+
 **Please provide your response in the following JSON format:**
-{{
-    "feasibility_report": "Detailed feasibility analysis.",
-    "development_effort": "Low/Medium/High"
-}}
+[
+    {{
+        "feasibility_report": "Detailed feasibility analysis.",
+        "development_effort": "Low/Medium/High"
+    }}
+]
 """
 
 PRIORITIZATION_PROMPT = """
@@ -96,7 +109,7 @@ You are a Product Manager tasked with prioritizing the following features based 
 {user_feedback}
 </user_feedback>
 
-**Provide your response as a JSON array in the following format only strictly**
+**Provide your response as a JSON array in the following format only strictly without any other text**
 [
     {{
         "rank": 1,
@@ -121,7 +134,7 @@ Generate a comprehensive final report summarizing the evaluation. Include the fo
 {solutions}
 
 3. **Development Effort Estimates:**
-{development_effort}
+{feasibility_reports}
 
 4. **Prioritized Task List:**
 {prioritized_tasks}

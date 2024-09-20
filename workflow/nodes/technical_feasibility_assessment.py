@@ -21,13 +21,9 @@ class TechnicalFeasibilityAssessmentNode:
 
         logger.debug("Starting Technical Feasibility Assessment Node.")
 
-        for feature in prioritized_features:
-            report, effort = await self.developer_agent.assess_feasibility_and_effort(feature)
-            feasibility_reports[feature] = {
-                "feasibility_report": report,
-                "development_effort": effort
-            }
 
-        logger.debug(f"Feasibility reports: {feasibility_reports}")
-        state["feasibility_reports"] = feasibility_reports
+        reports = await self.developer_agent.assess_feasibility_and_effort(prioritized_features)   
+        
+        logger.debug(f"Feasibility reports: {reports}")
+        state["feasibility_reports"] = reports
         return state

@@ -46,12 +46,12 @@ class ProductManagerAgent:
         logging.debug(f"Received response: {response.content}")
         return response.content
     
-    async def generate_final_report(self, pain_points: str, solutions: str, development_effort: str, prioritized_tasks: str) -> str:
+    async def generate_final_report(self, pain_points: str, solutions: str, feasibility_reports: List, prioritized_tasks: str) -> str:
         logging.debug("Generating final report.")
         prompt = FINAL_REPORT_PROMPT.format(
             pain_points=pain_points,
             solutions=solutions,
-            development_effort=development_effort,
+            development_effort=feasibility_reports,
             prioritized_tasks=prioritized_tasks
         )
         messages = [
