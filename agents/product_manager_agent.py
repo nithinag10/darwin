@@ -51,7 +51,7 @@ class ProductManagerAgent:
         prompt = FINAL_REPORT_PROMPT.format(
             pain_points=pain_points,
             solutions=solutions,
-            development_effort=feasibility_reports,
+            feasibility_reports=feasibility_reports,
             prioritized_tasks=prioritized_tasks
         )
         messages = [
