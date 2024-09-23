@@ -35,7 +35,9 @@ async def onboard_product(onboarding_request: ProductOnboardingRequest, db_con=D
     onboarding_data = {
         "project_id": onboarding_request.project_id,
         "figma_file_name": onboarding_request.figma_file_name,
-        "customer_info": onboarding_request.customer_info 
+        "customer_info": onboarding_request.customer_info ,
+        "figma_file_key" : onboarding_request.figma_file_key,
+        "figma_token" : onboarding_request.figma_token
     }
 
     # Process onboarding
