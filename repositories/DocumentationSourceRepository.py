@@ -92,3 +92,21 @@ class DocumentationSourceRepository:
             logger.error(f"Error deleting DocumentationSource with ID {documentation_source_id}: {e}")
             await self.db_con.rollback()
             raise e
+        
+    async def get_sources_by_product_id(self, product_id: Optional[int] = None) -> List[Dict[str, Any]]:
+        """
+        Retrieves documentation sources filtered by product_id if provided.
+        :param product_id: (Optional) The product ID to filter sources.
+        :return: List of documentation source dictionaries.
+        """
+        query = "SELECT * FROM DocumentationSources"
+        params = ()
+        if product_id is not None:
+            query += " WHERE product_id = %s"
+            params = (product_id,)
+        
+        async with aiomysql.connect(**self.db_config) as conn:
+            async with conn.cursor(aiomysql.DictCursor) as cursor:
+                await cursor.execute(query, params)
+                results = await cursor.fetchall()
+        return results
