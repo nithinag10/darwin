@@ -3,6 +3,7 @@ from repositories.DocumentationSourceRepository import DocumentationSourceReposi
 from services.data_fetching_service import DataFetchingService
 from services.blob_storage_service import BlobStorageService
 from models.documentation_source import DocumentationSourceSchema
+from services.figma_data_transformer import FigmaDataTransformer
 from pydantic import ValidationError
 import logging
 import html2text
@@ -16,6 +17,7 @@ class DocumentationSourceService:
         self.documentation_source_repo = DocumentationSourceRepository(db)
         self.data_fetching_service = DataFetchingService()
         self.blob_storage_service = blob_storage_service
+        self.figma_data_transformer = FigmaDataTransformer()
 
     async def fetch_and_store_landing_page(self, product_id: int, url: str):
         logger.debug(f"Processing URL: {url} (type: {type(url)})")
@@ -124,17 +126,26 @@ class DocumentationSourceService:
 
         content_type = "application/json"
 
-        # Serialize Figma data to JSON
+        # Transform and sanitize Figma data
         try:
-            json_data = json.dumps(data, indent=2).encode('utf-8')
+            transformed_data = self.figma_data_transformer.extract_useful_info(data)
+            logger.debug(f"Transformed Figma Data: {transformed_data}")
+
+            # Validate that transformed_data is a dictionary
+            if not isinstance(transformed_data, dict):
+                logger.error("Transformed data is not a dictionary. Aborting serialization.")
+                raise ValueError("Transformed data must be a dictionary.")
+
+            # Serialize to JSON
+            json_data = json.dumps(transformed_data, indent=2).encode('utf-8')
             logger.debug(f"Serialized Figma data length: {len(json_data)} bytes for file key: {file_key}")
         except Exception as e:
-            logger.error(f"Error serializing Figma data for file key {file_key}: {e}")
+            logger.error(f"Error processing Figma data for file key {file_key}: {e}")
             raise e
 
         # Upload to Blob Storage
         try:
-            blob_name = f"figma_designs/product_{product_id}/{self._generate_blob_name(file_key)}.json"
+            blob_name = f"figma_designs/product_{product_id}/{file_key}.json"
             storage_url = await self.blob_storage_service.upload_blob(blob_name, json_data, content_type)
             logger.info(f"Uploaded Figma design to Blob Storage: {storage_url}")
         except Exception as e:

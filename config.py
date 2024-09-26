@@ -13,9 +13,10 @@ class Settings(BaseSettings):
 
         # Added settings for model configuration
     model_api: str = "groq"  # Options: "groq", "openai"
-    model_name: str = "mixtral-8x7b-32768"  # Default model name
-    temperature: float = 0.9  # Default temperature for LLMs
+    model_name: str = "llama3-8b-8192"  # Default model name
+    temperature: float = 0.5
     model_api_key: str
+    openai_api_key: str
     
     class Config:
         env_file = ".env"

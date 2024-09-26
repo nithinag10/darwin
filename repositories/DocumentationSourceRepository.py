@@ -1,5 +1,5 @@
 from models.documentation_source import DocumentationSourceSchema
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import aiomysql
 import logging
 
@@ -104,9 +104,13 @@ class DocumentationSourceRepository:
         if product_id is not None:
             query += " WHERE product_id = %s"
             params = (product_id,)
-        
-        async with aiomysql.connect(**self.db_config) as conn:
-            async with conn.cursor(aiomysql.DictCursor) as cursor:
+
+        try:
+            async with self.db_con.cursor(aiomysql.DictCursor) as cursor:
                 await cursor.execute(query, params)
                 results = await cursor.fetchall()
-        return results
+                logger.info(f"Retrieved {len(results)} sources for Product ID: {product_id}" if product_id else f"Retrieved {len(results)} sources.")
+                return results
+        except Exception as e:
+            logger.error(f"Error retrieving sources for Product ID {product_id}: {e}")
+            return []

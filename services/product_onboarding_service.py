@@ -35,7 +35,7 @@ class ProductOnboardingService:
             product = Product(
                 project_id=onboarding_data["project_id"],
                 name=onboarding_data["figma_file_name"],
-                custom_instructions=custom_instructions  # Safely handled
+                custom_instructions=custom_instructions
             )
             product_id = await self.product_repository.create_product(product)
             logger.info(f"Created Product with ID: {product_id}")
@@ -81,7 +81,7 @@ class ProductOnboardingService:
                 file_key = file_key.strip()
             else:
                 logger.warning(f"File key is not a string: {file_key} (type: {type(file_key)})")
-                results[source_type] = {'status': 'failed', 'error': 'File key must be a string'}
+                results["figma_design"] = {'status': 'failed', 'error': 'File key must be a string'}
 
             if file_key:
                 try:

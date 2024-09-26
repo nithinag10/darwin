@@ -30,7 +30,7 @@ async def trigger_evaluation(
 ):
     # Initialize repositories and services
     evaluation_repository = EvaluationRepository(db_con[0])
-    rag_service = RAGService(vector_db=None)  # Assume vector DB is set up
+    rag_service = RAGService(db_con[0])
     product_manager_agent = ProductManagerAgent(agent_characteristics=None)
     user_agent_service = UserAgentService(db_con[0])
     ai_feature_ideation_agent = AIFeatureIdeationAgent()
