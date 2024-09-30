@@ -1,0 +1,50 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.env/
+env/
+.venv/
+new_venv/
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdists/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.sublime-project
+*.sublime-workspace
+
+# Logs and databases
+*.log
+*.sqlite3
+
+# Tests
+tests/
+coverage/
+.tox/
+
+# Others
+*.git
+*.github
+*.gitattributes
+*.gitignore
